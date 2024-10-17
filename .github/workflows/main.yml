@@ -56,7 +56,6 @@ jobs:
 
         - name: Commit and Push to nh-cicd repository
           run: |
-            cd Slack-API
             git config user.email "sacho0929@gmail.com"
             git config user.name "Suah-Cho"
             git commit -am "Update slack image - slack-test:${{ steps.version.outputs.version }}"
