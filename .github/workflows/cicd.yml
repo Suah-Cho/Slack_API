@@ -31,15 +31,6 @@ jobs:
                      cd /home/azureuser
                      git clone https://github.com/Suah-Cho/Slack_API.git
                    fi
-                
-            - name: Move .env file to VM
-              uses: appleboy/scp-action@master
-              with:
-                host: ${{ secrets.PROD_SSH_HOST }}
-                username: ${{ secrets.PROD_SSH_USERNAME }}
-                key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
-                source: ".env"
-                target: "/home/azureuser/Slack_API/cicd"
 
             - name: Start Docker Compose
               uses: appleboy/ssh-action@master
