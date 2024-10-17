@@ -60,3 +60,5 @@ jobs:
             git config user.name "Suah-Cho"
             git commit -am "Update slack image - slack-test:${{ steps.version.outputs.version }}"
             git push origin main
+          env: 
+            GITHUB_TOKEN: ${{ secrets.PAT }}
