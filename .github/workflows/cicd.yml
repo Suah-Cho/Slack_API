@@ -1,4 +1,4 @@
-name: main Deploy
+name: cicd.yml
 
 on:
     push:

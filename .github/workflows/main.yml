@@ -1,4 +1,4 @@
-name: growpilot production build
+name: main.yml
 
 on:
   push:
