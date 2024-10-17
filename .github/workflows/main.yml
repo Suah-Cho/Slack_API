@@ -1,0 +1,47 @@
+name: growpilot production build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+     runs-on: ubuntu-latest
+
+     steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
+        - name: Get Current time
+          uses: josStorer/get-current-time@v2.0.2
+          id: current-time
+          with:
+            format: "YYYY-MM-DD HH:mm:ss"
+            utcOffset: "+09:00"
+
+        - name: Get next version
+          uses: reecetech/version-increment@2024.4.3
+          id: version
+          with:
+            scheme: semver
+            increment: minor
+            
+        - name: Create a GitHub Release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.PAT }}
+          with:
+            tag_name: ${{ steps.version.outputs.version }}
+            release_name: Release ${{ steps.version.outputs.version }}
+            body: Automated release for version ${{ steps.version.outputs.version }}
+        
+        - name: Image Build and Push to ACR
+          uses: azure/docker-login@v2
+          with:
+            login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+            username: ${{ secrets.ACR_USERNAME }}
+            password: ${{ secrets.ACR_PASSWORD }}
+        - run: |
+            docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/slack-test:${{ steps.version.outputs.version }} --build-arg IMAGE_TAG=${{ steps.version.outputs.version }} --build-arg IMAGE_BUILD_DATE="${{steps.current-time.outputs.formattedTime}}" .
+            docker push ${{ secrets.ACR_LOGIN_SERVER }}/slack-test:${{ steps.version.outputs.version }}
