@@ -50,6 +50,7 @@ jobs:
 
         - name: Modify cicd/docker-compose.yml
           run: |
+            ls
             sed -i 's/arctestsa.azurecr.io\/slack-test:[0-9.]\+/arctestsa.azurecr.io\/slack-test:${{ steps.version.outputs.version }}/' Slack_API/cicd/docker-compose.yml
             cat Slack_API/cicd/docker-compose.yml
 
