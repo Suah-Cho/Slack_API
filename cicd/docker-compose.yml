@@ -2,9 +2,7 @@ version: "3.8"
 
 services:
   slack:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: arctestsa.azurecr.io/slack-test:0.1.0
     ports:
       - "8000:8000"
     env_file:

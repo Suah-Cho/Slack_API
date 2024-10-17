@@ -1,0 +1,56 @@
+name: main Deploy
+
+on:
+    push:
+        paths:
+            - 'cicd/**'
+        branches:
+            - main
+  
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v2
+
+            - name: Deploy
+              uses: appleboy/ssh-action@master
+              with:
+                host: ${{ secrets.PROD_SSH_HOST }}
+                username: ${{ secrets.PROD_SSH_USERNAME }}
+                key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+                script: |
+                   az acr login --name ${{ secrets.ACR_REGISTRY }} --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }}
+                   if [ -d '/home/azureuser/Slack_API' ]; then
+                     cd /home/azureuser/nh-cicd
+                     git pull origin main
+                   else
+                     mkdir -p /home/azureuser
+                     cd /home/azureuser
+                     git clone https://github.com/Suah-Cho/Slack_API.git
+                   fi
+                
+            - name: Move .env file to VM
+              uses: appleboy/scp-action@master
+              with:
+                host: ${{ secrets.PROD_SSH_HOST }}
+                username: ${{ secrets.PROD_SSH_USERNAME }}
+                key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+                source: ".env"
+                target: "/home/azureuser/Slack_API/cicd"
+
+            - name: Start Docker Compose
+              uses: appleboy/ssh-action@master
+              id: docker-compose
+              with: 
+                host: ${{ secrets.PROD_SSH_HOST }}
+                username: ${{ secrets.PROD_SSH_USERNAME }}
+                key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+                script: |
+                  cd /home/azureuser/Slack_API/cicd
+                  echo "VM_HOSTNAME=$(echo $HOSTNAME)" >> .env
+                  docker compose up -d
+                  docker image prune -a -f
+

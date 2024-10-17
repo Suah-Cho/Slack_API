@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'cicd/**'
 
 jobs:
   build:
@@ -45,3 +47,16 @@ jobs:
         - run: |
             docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/slack-test:${{ steps.version.outputs.version }} --build-arg IMAGE_TAG=${{ steps.version.outputs.version }} --build-arg IMAGE_BUILD_DATE="${{steps.current-time.outputs.formattedTime}}" .
             docker push ${{ secrets.ACR_LOGIN_SERVER }}/slack-test:${{ steps.version.outputs.version }}
+
+        - name: Modify cicd/docker-compose.yml
+          run: |
+            sed -i 's/arctestsa.azurecr.io\/slack-test:[0-9.]\+/arctestsa.azurecr.io\/slack-test:${{ steps.version.outputs.version }}/' ./cicd/docker-compose.yml
+            cat ./cicd/docker-compose.yml
+
+        - name: Commit and Push to nh-cicd repository
+          run: |
+            cd Slack-API
+            git config user.email "sacho0929@gmail.com"
+            git config user.name "Suah-Cho"
+            git commit -am "Update slack image - slack-test:${{ steps.version.outputs.version }}"
+            git push origin main
